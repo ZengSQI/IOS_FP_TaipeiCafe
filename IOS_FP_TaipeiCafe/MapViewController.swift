@@ -18,18 +18,28 @@ class MapViewController: UIViewController, GMSMapViewDelegate, Subscriber{
     var currentLocation: CLLocation?
     var mapView: GMSMapView!
     var placesClient: GMSPlacesClient!
-    var zoomLevel: Float = 15.0
+    var zoomLevel: Float = 16.0
     
     var shops = [CafeShop]()
     
-    var makers = [GMSMarker]()
+    var shopsSource = [CafeShop]()
+    
+    var markers = [GMSMarker]()
+    
+    var markersSource = [GMSMarker]()
     
     var listView:ListViewController?
+    
+    var nearestId = 0
+    
+    var ud = UserDefaults.standard
+    
+    var onFav = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.navigationController?.navigationBar.barTintColor = hexStringToUIColor("F0B31D")
+        self.navigationController?.navigationBar.barTintColor =  hexStringToUIColor("F0B31D")
         
         self.navigationController?.navigationBar.tintColor = hexStringToUIColor("7D5A1A")
         // Do any additional setup after loading the view, typically from a nib.
@@ -59,13 +69,44 @@ class MapViewController: UIViewController, GMSMapViewDelegate, Subscriber{
     }
     
     func loadData(_ shops:[CafeShop]){
+        self.shops = shops
+        self.shopsSource = shops
+        var favList = ud.dictionary(forKey: "favList") as! [String:Int]
         for shop in shops{
             let position = CLLocationCoordinate2D(latitude: shop.latitude, longitude: shop.longitude)
             let marker = GMSMarker(position: position)
             marker.title = shop.name
-            marker.snippet = "綜合評分：\(String.init(format: "%.1f", shop.avag))"
+            marker.snippet = "綜合評分：\(String.init(format: "%.1f", shop.avag))  距離：\(shop.distance)M"
             marker.map = mapView
             marker.userData = shop
+            self.markers.append(marker)
+            self.markersSource.append(marker)
+            if let _ = favList[shop.id]{}
+            else{
+                favList.updateValue(0, forKey: shop.id)
+                print("update")
+            }
+        }
+        ud.set(favList, forKey: "favList")
+        if let cl = currentLocation{
+            getDistance(location: cl)
+        }
+    }
+    
+    func filterData(_ shops:[CafeShop]){
+        self.shops = shops
+        for shop in shops{
+            let position = CLLocationCoordinate2D(latitude: shop.latitude, longitude: shop.longitude)
+            let marker = GMSMarker(position: position)
+            marker.title = shop.name
+            marker.snippet = "綜合評分：\(String.init(format: "%.1f", shop.avag))  距離：\(shop.distance)M"
+            marker.map = mapView
+            marker.userData = shop
+            self.markers.append(marker)
+            self.markersSource.append(marker)
+        }
+        if let cl = currentLocation{
+            getDistance(location: cl)
         }
     }
     
@@ -73,10 +114,64 @@ class MapViewController: UIViewController, GMSMapViewDelegate, Subscriber{
         self.performSegue(withIdentifier: "showDetail", sender: marker.userData)
     }
     
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    
+    @IBAction func optionMenu(_ sender: UIBarButtonItem) {
+        let menu = UIAlertController(title: "", message: "動作選擇", preferredStyle: .actionSheet)
+        let nearest = UIAlertAction(title: "找最近", style: .default, handler: { _ in
+            self.mapView.selectedMarker = self.markers[self.nearestId]
+            self.mapView.animate(to: GMSCameraPosition.camera(withTarget: self.markers[self.nearestId].position, zoom: self.zoomLevel))
+        })
+        var fav = UIAlertAction()
+        if onFav == 1{
+            fav = UIAlertAction(title: "顯示全部", style: .default, handler: { _ in
+                self.mapView.clear()
+                self.markers.removeAll()
+                self.filterData(self.shopsSource)
+                self.onFav = 0
+            })
+        }else{
+            fav = UIAlertAction(title: "顯示最愛", style: .default, handler: { _ in
+                self.mapView.clear()
+                self.markers.removeAll()
+                let ud = UserDefaults.standard
+                let favList = ud.dictionary(forKey: "favList") as! [String:Int]
+                let filtershops = self.shops.filter({ (shop) -> Bool in
+                    return favList[shop.id] == 1
+                })
+                self.filterData(filtershops)
+                self.onFav = 1
+            })
+        }
+        let cancel = UIAlertAction(title: "取消", style: .cancel, handler: nil)
+        menu.addAction(nearest)
+        menu.addAction(fav)
+        menu.addAction(cancel)
+        self.present(menu, animated: true, completion: nil)
+    }
+    
+    func getDistance(location: CLLocation){
+        var min = 99999
+        var i = 0
+        for shop in shops{
+            shop.distance = Int(location.distance(from: shop.location))
+            //print("kk")
+            self.markers[i].snippet = "綜合評分：\(String.init(format: "%.1f", shop.avag))  距離：\(shop.distance)M"
+            if shop.distance <= min && shop.distance != 0 {
+                min = shop.distance
+                nearestId = i
+                print(min)
+            }
+            i = i+1
+        }
+        print(nearestId)
+    }
+    
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetail" {
@@ -105,8 +200,8 @@ extension MapViewController: CLLocationManagerDelegate {
         } else {
             mapView.animate(to: camera)
         }
-        
-        //listLikelyPlaces()
+        currentLocation = location
+        getDistance(location: location)
     }
     
     // Handle authorization for the location manager.
@@ -132,4 +227,5 @@ extension MapViewController: CLLocationManagerDelegate {
         print("Error: \(error)")
     }
 }
+
 

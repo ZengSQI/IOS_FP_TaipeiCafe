@@ -436,7 +436,7 @@
                                 <action selector="backToList:" destination="JkP-Qf-5Ce" id="Ubf-DF-klr"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem key="rightBarButtonItem" title="導航" id="fBF-qN-OgG">
+                        <barButtonItem key="rightBarButtonItem" image="option_menu" id="fBF-qN-OgG">
                             <connections>
                                 <action selector="openMap:" destination="JkP-Qf-5Ce" id="OXw-z1-lcd"/>
                             </connections>
@@ -477,7 +477,13 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
-                    <navigationItem key="navigationItem" title="地圖瀏覽" id="A2c-fG-hyR"/>
+                    <navigationItem key="navigationItem" title="地圖瀏覽" id="A2c-fG-hyR">
+                        <barButtonItem key="rightBarButtonItem" image="option_menu" id="Vl5-RX-Pbl">
+                            <connections>
+                                <action selector="optionMenu:" destination="keo-6e-yUU" id="q6z-hg-AbS"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <segue destination="JkP-Qf-5Ce" kind="show" identifier="showDetail" id="8En-aX-wQm"/>
                     </connections>
@@ -550,6 +556,7 @@
     <resources>
         <image name="list" width="25" height="25"/>
         <image name="map_" width="25" height="25"/>
+        <image name="option_menu" width="19" height="19"/>
     </resources>
     <inferredMetricsTieBreakers>
         <segue reference="8En-aX-wQm"/>

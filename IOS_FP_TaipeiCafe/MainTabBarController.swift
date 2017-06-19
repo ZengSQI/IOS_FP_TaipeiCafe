@@ -21,6 +21,8 @@ class MainTabBarController: UITabBarController {
     
     var shops = [CafeShop]()
 
+    var ud = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -35,7 +37,10 @@ class MainTabBarController: UITabBarController {
             subscribers.append(vcc as! Subscriber)
         }
         
-        
+        if let _ = self.ud.dictionary(forKey: "favList"){
+        }else{
+            ud.set([String:Int](), forKey: "favList")
+        }
         loadData()
     }
     

@@ -146,15 +146,38 @@ class DetailViewController: UIViewController {
     }
 
     @IBAction func openMap(_ sender: UIBarButtonItem) {
-        if (UIApplication.shared.canOpenURL(URL(string:"comgooglemaps://")!)) {
-            UIApplication.shared.open(URL(string:
-                "comgooglemaps://?daddr=\((cafeShop?.latitude)!),\((cafeShop?.longitude)!)&directionsmode=walking")!)
-        } else {
-            let alert = UIAlertController.init(title: "無法開啟GoogleMaps", message: "請至AppStore下載", preferredStyle: .alert)
-            self.show(alert, sender: nil)
-            print("Can't use comgooglemaps://");
+        let ud = UserDefaults.standard
+        var favList = ud.dictionary(forKey: "favList") as! [String:Int]
+        
+        let menu = UIAlertController(title: "", message: "動作選擇", preferredStyle: .actionSheet)
+        let map = UIAlertAction(title: "導航", style: .default, handler: { _ in
+            if (UIApplication.shared.canOpenURL(URL(string:"comgooglemaps://")!)) {
+                UIApplication.shared.open(URL(string:
+                    "comgooglemaps://?daddr=\((self.cafeShop?.latitude)!),\((self.cafeShop?.longitude)!)&directionsmode=walking")!)
+            } else {
+                let alert = UIAlertController.init(title: "無法開啟GoogleMaps", message: "請至AppStore下載", preferredStyle: .alert)
+                self.show(alert, sender: nil)
+                print("Can't use comgooglemaps://");
+            }
+        })
+        var fav = UIAlertAction()
+        if favList[(self.cafeShop?.id)!] == 1{
+            fav = UIAlertAction(title: "移除最愛", style: .default, handler: { _ in
+                favList.updateValue(0, forKey: (self.cafeShop?.id)!)
+                ud.set(favList, forKey: "favList")
+            })
+        }else{
+            fav = UIAlertAction(title: "加入最愛", style: .default, handler: { _ in
+                favList.updateValue(1, forKey: (self.cafeShop?.id)!)
+                ud.set(favList, forKey: "favList")
+            })
         }
-
+        let cancel = UIAlertAction(title: "取消", style: .cancel, handler: nil)
+        menu.addAction(map)
+        menu.addAction(fav)
+        menu.addAction(cancel)
+        self.present(menu, animated: true, completion: nil)
+        
     }
     
 }

@@ -8,6 +8,8 @@
 
 import Foundation
 import SwiftyJSON
+import GoogleMaps
+
 
 enum limited_type {
     case yes, no, maybe
@@ -32,6 +34,10 @@ class CafeShop:NSObject{
     private var _standing_desk:limited_type = .maybe
     private var _mrt:String = ""
     private var _open_time:String = ""
+    
+    var id:String{
+        return _id
+    }
     
     var name:String{
         return _name
@@ -87,6 +93,12 @@ class CafeShop:NSObject{
     
     var avag:Float = 0
     
+    var location:CLLocation{
+        return CLLocation(latitude: CLLocationDegrees(latitude), longitude: CLLocationDegrees(longitude))
+    }
+    
+    var distance:Int = 9999
+    
     init(_ json:JSON) {
         self._id = json["id"].stringValue
         self._name = json["name"].stringValue
@@ -99,7 +111,11 @@ class CafeShop:NSObject{
         self._music = json["music"].floatValue
         self._url = json["url"].stringValue
         self._address = json["address"].stringValue
-        self._latitude = json["latitude"].stringValue
+        if self._name == "The Lightened"{
+            self._latitude = "121.5431656"
+        }else{
+            self._latitude = json["latitude"].stringValue
+        }
         self._longitude = json["longitude"].stringValue
         switch json["limited_time"].stringValue {
         case "yes":

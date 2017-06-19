@@ -33,6 +33,14 @@ class ListTableViewController: UITableViewController, UISearchResultsUpdating, U
         tableView.reloadData()
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        //searchController.isActive = false
+        //shouldShowSearchResults = false
+        //tableView.reloadData()
+        //print("a")
+    }
+    
     func loadData(_ shops:[CafeShop]){
         self.shops = shops
         self.currentShops = shops
@@ -84,8 +92,6 @@ class ListTableViewController: UITableViewController, UISearchResultsUpdating, U
         tableView.reloadData()
     }
     
-    
-
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
